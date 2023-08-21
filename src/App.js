@@ -1,23 +1,49 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState } from "react";
+import Data from "./components/Data";
+
 
 function App() {
+  const [data, setData] = useState();
+  const [city, setCity] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    const API_KEY = 'CHAVE_API';
+	
+    const res = await fetch(
+      `http://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${city}&aqi=no`
+    );
+    const result = await res.json();
+    if (res.ok) {
+      setData(result);
+      setLoading(false);
+      setCity("");
+      return;
+    }
+    setError(result.error.message);
+    setLoading(false);
+  };
+  if (loading) {
+    return <h3>Loading...</h3>;
+  }
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="City name"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+        />
+        <button>Get Data</button>
+      </form>
+      {error && <p>{error}</p>}
+      {!error && data && <Data data={data} />}
     </div>
   );
 }
